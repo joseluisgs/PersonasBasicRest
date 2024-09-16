@@ -17,6 +17,7 @@ public static class HeroMapper
             IsBad = hero.IsBad
         };
     }
+    
 
     public static Hero ToModel(this HeroEntity heroEntity)
     {
