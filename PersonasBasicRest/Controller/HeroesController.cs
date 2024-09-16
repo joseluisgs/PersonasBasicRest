@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PersonasBasicRest.Database;
-using PersonasBasicRest.Logger;
 using PersonasBasicRest.Mapper;
 using PersonasBasicRest.Models;
 using Swashbuckle.AspNetCore.Annotations;
@@ -17,11 +16,12 @@ public class HeroesController : ControllerBase
 {
     private readonly HeroDbContext _context; // contexto de la base de datos
 
-    private readonly Serilog.Core.Logger _logger = LoggerUtils<HeroesController>.GetLogger(); // logger
+    private readonly ILogger _logger; // logger
 
-    public HeroesController(HeroDbContext context)
+    public HeroesController(HeroDbContext context, ILogger<HeroesController> logger)
     {
         _context = context;
+        _logger = logger;
     }
 
     // GET: heroes
@@ -31,9 +31,11 @@ public class HeroesController : ControllerBase
     [SwaggerResponse(200, "Returns the list of heroes", typeof(IEnumerable<Hero>))]
     public async Task<ActionResult<IEnumerable<Hero>>> GetAll()
     {
-        _logger.Debug("Getting all heroes");
+        _logger.LogDebug("Getting all heroes");
+
         // return await _context.Heroes.ToListAsync();
         // return Ok(await _context.Heroes.ToListAsync());
+        _logger.LogInformation("Retrieved all heroes");
         return Ok(await _context.Heroes
             .Select(hero => hero.ToModel())
             .ToListAsync()
@@ -50,15 +52,19 @@ public class HeroesController : ControllerBase
         [SwaggerParameter("ID of the hero", Required = true)]
         long id)
     {
-        _logger.Debug($"Getting hero with ID: {id}");
+        _logger.LogDebug($"Getting hero with ID: {id}");
 
         var hero = await _context.Heroes.FindAsync(id);
 
         // Si es nulo héroe no existe, devuelve un 404 Not Found
-        if (hero == null) return NotFound("Hero with this ID " + id + " not found.");
+        if (hero == null)
+        {
+            _logger.LogError($"Hero with ID {id} not found.");
+            return NotFound("Hero with this ID " + id + " not found.");
+        }
 
         // Devuelve el héroe encontrado
-        _logger.Information($"Hero {hero.Id} retrieved");
+        _logger.LogDebug($"Hero {id} retrieved");
         return Ok(hero.ToModel());
     }
 
@@ -74,17 +80,21 @@ public class HeroesController : ControllerBase
         Hero hero
     )
     {
-        _logger.Debug("Creating a new hero");
+        _logger.LogDebug("Creating a new hero");
 
         // Valida el nombre del héroe
-        if (string.IsNullOrWhiteSpace(hero.Name)) return BadRequest("Invalid hero name.");
+        if (string.IsNullOrWhiteSpace(hero.Name))
+        {
+            _logger.LogError("Invalid hero name");
+            return BadRequest("Invalid hero name.");
+        }
 
         var entityToSave = hero.ToEntity();
         entityToSave.Id = HeroEntity.NewId;
 
         await _context.Heroes.AddAsync(entityToSave); // Guarda el héroe en la base de datos
         await _context.SaveChangesAsync(); // Confirma los cambios en la base de datos
-        _logger.Information($"Hero {entityToSave.Id} created");
+        _logger.LogInformation($"Hero {entityToSave.Id} created");
 
         // Devuelve el héro creado
         return CreatedAtAction(nameof(GetHero), new { id = entityToSave.Id }, entityToSave.ToModel());
@@ -107,14 +117,22 @@ public class HeroesController : ControllerBase
         Hero hero
     )
     {
-        _logger.Debug($"Updating hero with ID: {id}");
+        _logger.LogDebug($"Updating hero with ID: {id}");
 
         // Valida el nombre del héroe
-        if (string.IsNullOrWhiteSpace(hero.Name)) return BadRequest("Invalid hero name.");
+        if (string.IsNullOrWhiteSpace(hero.Name))
+        {
+            _logger.LogError("Invalid hero name");
+            return BadRequest("Invalid hero name.");
+        }
 
         // Busca el héroe en la base de datos, si no lo encuentra devuelve un 404 Not Found
         var entityToUpdate = await _context.Heroes.FindAsync(id);
-        if (entityToUpdate == null) return NotFound("Hero with this ID " + id + " not found.");
+        if (entityToUpdate == null)
+        {
+            _logger.LogError($"Hero with ID {id} not found.");
+            return NotFound("Hero with this ID " + id + " not found.");
+        }
 
         // Copia los valores del héroe recibido al héroe en la base de datos
         // No puedes usar directamente el héroe recibido con el mapper porque necesitamos la referencia del objeto
@@ -124,7 +142,7 @@ public class HeroesController : ControllerBase
         // Guarda los cambios en la base de datos
         _context.Entry(entityToUpdate).State = EntityState.Modified;
         await _context.SaveChangesAsync();
-        _logger.Information($"Hero {entityToUpdate.Id} updated");
+        _logger.LogInformation($"Hero {entityToUpdate.Id} updated");
 
         // Devuelve el héroe actualizado
         return Ok(entityToUpdate.ToModel());
@@ -142,16 +160,20 @@ public class HeroesController : ControllerBase
         long id
     )
     {
-        _logger.Debug($"Deleting hero with ID: {id}");
+        _logger.LogDebug($"Deleting hero with ID: {id}");
 
         // Busca el héroe en la base de datos, si no lo encuentra devuelve un 404 Not Found
         var entityToDelete = await _context.Heroes.FindAsync(id);
-        if (entityToDelete == null) return NotFound("Hero with this ID " + id + " not found.");
+        if (entityToDelete == null)
+        {
+            _logger.LogError($"Hero with ID {id} not found.");
+            return NotFound("Hero with this ID " + id + " not found.");
+        }
 
         // Elimina el héroe de la base de datos
         _context.Heroes.Remove(entityToDelete);
         await _context.SaveChangesAsync();
-        _logger.Information($"Hero {entityToDelete.Id} deleted");
+        _logger.LogInformation($"Hero {entityToDelete.Id} deleted");
 
         // Devuelve un 204 No Content
         return NoContent();

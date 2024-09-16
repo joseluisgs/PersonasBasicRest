@@ -2,24 +2,35 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using PersonasBasicRest.Database;
-using PersonasBasicRest.Logger;
-
+using Serilog;
 
 Console.OutputEncoding = Encoding.UTF8; // Necesario para mostrar emojis
 
-var logger = LoggerUtils<Program>.GetLogger();
+var logger = new LoggerConfiguration().ReadFrom
+    .Configuration(new ConfigurationBuilder().AddJsonFile("logger.json").Build())
+    .CreateLogger(); // Crea una nueva instancia de LoggerConfiguration con la configuración de appsettings.json
+
 
 var builder =
     WebApplication
         .CreateBuilder(args); // Crea una nueva instancia de WebApplicationBuilder con los argumentos de entrada
 
-// Añadimos los servicios necesarios para la aplicación web
+
+// Poner Serilog como logger por defecto (otra alternativa)
+builder.Services.AddLogging(logging =>
+{
+    logging.ClearProviders(); // Limpia los proveedores de log por defecto
+    logging.AddSerilog(logger, true); // Añade Serilog como un proveedor de log
+});
+logger.Debug("Serilog added as default logger");
+
 
 // Añadimos los contextos de la base de datos en memoria para pruebas
 builder.Services.AddDbContext<HeroDbContext>(options =>
     {
         options.UseInMemoryDatabase("Heroes")
-            .EnableSensitiveDataLogging();
+            // Disable log
+            .EnableSensitiveDataLogging(); // Habilita el registro de datos sensibles
         logger.Debug("In-memory database added");
     }
 );
@@ -48,12 +59,12 @@ builder.Services.AddSwaggerGen(c =>
         {
             Name = "José Luis González Sánchez",
             Email = "joseluis.gonzalez@iesluisvives.org",
-            Url = new Uri("https://joseluisgs.dev"),
+            Url = new Uri("https://joseluisgs.dev")
         },
         License = new OpenApiLicense
         {
             Name = "Use under Creative Commons License",
-            Url = new Uri("https://joseluisgs.dev/docs/license/"),
+            Url = new Uri("https://joseluisgs.dev/docs/license/")
         }
     });
 }); // Agrega SwaggerGen para generar documentación de la API
