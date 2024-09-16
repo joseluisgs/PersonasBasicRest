@@ -1,3 +1,7 @@
+using PersonasBasicRest.Logger;
+
+var logger = LoggerUtils<Program>.GetLogger();
+
 var builder = WebApplication.CreateBuilder(args); // Crea una nueva instancia de WebApplicationBuilder con los argumentos de entrada
 
 // Add services to the container.
@@ -39,6 +43,7 @@ app.MapGet("/weatherforecast", () =>
     .WithName("GetWeatherForecast")
     .WithOpenApi();
 
+logger.Debug("Weather forecast route registered");
 
 app.Run(); // Inicia la aplicación web
 
