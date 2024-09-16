@@ -4,7 +4,7 @@
       "Serilog.Sinks.Console",
       "Serilog.Sinks.File"
     ],
-    "MinimumLevel": "Debug",
+    "MinimumLevel": "Info",
     "WriteTo": [
       {
         "Name": "Console",
@@ -16,7 +16,7 @@
       {
         "Name": "File",
         "Args": {
-          "path": "logs/errors-and-fatal.log",
+          "path": "log-.log",
           "restrictedToMinimumLevel": "Error",
           "outputTemplate": "[{Timestamp:yyyy-MM-dd HH:mm:ss.fff}] [{Level:u3}] [{SourceContext}] {Message:lj}{NewLine}{Exception}",
           "rollingInterval": "Day"

@@ -6,10 +6,20 @@ using Serilog;
 
 Console.OutputEncoding = Encoding.UTF8; // Necesario para mostrar emojis
 
-var logger = new LoggerConfiguration().ReadFrom
-    .Configuration(new ConfigurationBuilder().AddJsonFile("logger.json").Build())
-    .CreateLogger(); // Crea una nueva instancia de LoggerConfiguration con la configuración de appsettings.json
+// Leemos en qué entorno estamos
+var environment = Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Production";
+Console.WriteLine($"Environment: {environment}");
 
+
+// Configuramos Serilog
+var configuration = new ConfigurationBuilder()
+    .AddJsonFile($"logger.{environment}.json", optional: false, reloadOnChange: true)
+    .Build();
+
+// Creamos un logger con la configuración de Serilog
+var logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(configuration)
+    .CreateLogger();
 
 var builder =
     WebApplication
