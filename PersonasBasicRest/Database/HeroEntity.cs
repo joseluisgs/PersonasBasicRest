@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using PersonasBasicRest.Models;
 
 namespace PersonasBasicRest.Database;
 
@@ -28,4 +29,10 @@ public class HeroEntity
 
     public DateTime CreatedAt { get; set; } = DateTime.Now; // Agrega la fecha de creación del héroe al crearlo
     public DateTime UpdatedAt { get; set; } = DateTime.Now; // Agrega la fecha de actualización del héroe al modificarlo
+    
+    public void FromModel(Hero hero)
+    {
+        Name = hero.Name;
+        IsBad = hero.IsBad;
+    }
 }

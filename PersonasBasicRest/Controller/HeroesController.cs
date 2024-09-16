@@ -118,8 +118,7 @@ public class HeroesController : ControllerBase
 
         // Copia los valores del héroe recibido al héroe en la base de datos
         // No puedes usar directamente el héroe recibido con el mapper porque necesitamos la referencia del objeto
-        entityToUpdate.Name = hero.Name;
-        entityToUpdate.IsBad = hero.IsBad;
+        entityToUpdate.FromModel(hero);
 
         // Guarda los cambios en la base de datos
         _context.Entry(entityToUpdate).State = EntityState.Modified;
