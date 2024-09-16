@@ -62,16 +62,19 @@ public class HeroesController : ControllerBase
     [SwaggerOperation(Summary = "Create a new hero", Description = "Creates a new hero")]
     [SwaggerResponse(201, "Hero created", typeof(Hero))]
     [SwaggerResponse(400, "Invalid hero name")]
-    public async Task<ActionResult<Hero>> Post(Hero hero)
+    public async Task<ActionResult<Hero>> Post(
+        [FromBody] Hero hero
+    )
     {
         _logger.Debug("Creating a new hero");
         if (string.IsNullOrWhiteSpace(hero.Name)) return BadRequest("Invalid hero name.");
 
         var entityToSave = hero.ToEntity();
         entityToSave.Id = HeroEntity.NewId;
-        
-        await  _context.Heroes.AddAsync(entityToSave); // Guarda el héroe en la base de datos
+
+        await _context.Heroes.AddAsync(entityToSave); // Guarda el héroe en la base de datos
         await _context.SaveChangesAsync(); // Confirma los cambios en la base de datos
-        return CreatedAtAction(nameof(GetHero), new { id = entityToSave.Id }, hero.ToEntity());
+        _logger.Information($"Hero {entityToSave.Id} created");
+        return CreatedAtAction(nameof(GetHero), new { id = entityToSave.Id }, entityToSave.ToModel());
     }
 }
