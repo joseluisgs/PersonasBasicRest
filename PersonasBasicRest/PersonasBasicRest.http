@@ -1,7 +1,39 @@
 ## Fichero para probar el servicio
 @PersonasBasicRest_HostAddress = http://localhost:5152
 
-GET {{PersonasBasicRest_HostAddress}}/weatherforecast/
+
+GET {{PersonasBasicRest_HostAddress}}/heroes/
 Accept: application/json
 
 ###
+
+GET {{PersonasBasicRest_HostAddress}}/heroes/1
+Accept: application/json
+
+###
+
+POST {{PersonasBasicRest_HostAddress}}/heroes/
+Content-Type: application/json
+Accept: application/json
+
+{
+  "name": "Spiderman",
+  "isBad": false
+}
+
+###
+PUT {{PersonasBasicRest_HostAddress}}/heroes/1
+Content-Type: application/json
+Accept: application/json
+
+{
+  "id": 1,
+  "name": "Spiderman (modificado)",
+  "isBad": true
+}
+
+###
+
+DELETE {{PersonasBasicRest_HostAddress}}/heroes/1
+Accept: application/json
+
