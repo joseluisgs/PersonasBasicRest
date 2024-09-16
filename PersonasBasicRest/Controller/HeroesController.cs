@@ -42,6 +42,7 @@ public class HeroesController : ControllerBase
 
     // GET: heroes/5
     [HttpGet("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SwaggerOperation(Summary = "Retrieve a hero", Description = "Returns a hero with the specified ID.")]
     [SwaggerResponse(200, "Returns the hero", typeof(Hero))]
     [SwaggerResponse(404, "Hero with this ID not found")]
@@ -63,6 +64,8 @@ public class HeroesController : ControllerBase
 
     // POST: heroes
     [HttpPost]
+    [ProducesResponseType(StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [SwaggerOperation(Summary = "Create a new hero", Description = "Creates a new hero")]
     [SwaggerResponse(201, "Hero created", typeof(Hero))]
     [SwaggerResponse(400, "Invalid hero name")]
@@ -89,6 +92,10 @@ public class HeroesController : ControllerBase
 
     // PUT: heroes/5
     [HttpPut("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [SwaggerResponse(404, "Hero with this ID not found")]
     [SwaggerOperation(Summary = "Update a hero", Description = "Updates a hero")]
     [SwaggerResponse(200, "Hero updated", typeof(Hero))]
     [SwaggerResponse(404, "Hero with this ID not found")]
@@ -122,9 +129,11 @@ public class HeroesController : ControllerBase
         // Devuelve el héroe actualizado
         return Ok(entityToUpdate.ToModel());
     }
-    
+
     // DELETE: heroes/5
     [HttpDelete("{id:int}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [SwaggerOperation(Summary = "Delete a hero", Description = "Deletes a hero")]
     [SwaggerResponse(204, "Hero deleted")]
     [SwaggerResponse(404, "Hero with this ID not found")]
@@ -134,16 +143,16 @@ public class HeroesController : ControllerBase
     )
     {
         _logger.Debug($"Deleting hero with ID: {id}");
-        
+
         // Busca el héroe en la base de datos, si no lo encuentra devuelve un 404 Not Found
         var entityToDelete = await _context.Heroes.FindAsync(id);
         if (entityToDelete == null) return NotFound("Hero with this ID " + id + " not found.");
-        
+
         // Elimina el héroe de la base de datos
         _context.Heroes.Remove(entityToDelete);
         await _context.SaveChangesAsync();
         _logger.Information($"Hero {entityToDelete.Id} deleted");
-        
+
         // Devuelve un 204 No Content
         return NoContent();
     }
