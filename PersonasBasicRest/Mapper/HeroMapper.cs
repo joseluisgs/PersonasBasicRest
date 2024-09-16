@@ -14,7 +14,7 @@ public static class HeroMapper
         {
             Id = hero.Id,
             Name = hero.Name,
-            IsBadGuy = hero.IsBadGuy
+            IsBad = hero.IsBad
         };
     }
 
@@ -24,7 +24,7 @@ public static class HeroMapper
         {
             Id = heroEntity.Id,
             Name = heroEntity.Name,
-            IsBadGuy = heroEntity.IsBadGuy,
+            IsBad = heroEntity.IsBad,
             CreatedAt = heroEntity.CreatedAt,
             UpdatedAt = heroEntity.UpdatedAt
         };
